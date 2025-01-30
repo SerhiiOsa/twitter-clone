@@ -45,7 +45,7 @@ const Post = ({ post }) => {
   const { mutate: likePost, isPending: isLiking } = useMutation({
     mutationFn: async () => {
       try {
-        const response = await fetch('api/posts/like/' + post._id, {
+        const response = await fetch('/api/posts/like/' + post._id, {
           method: 'POST',
         });
         const data = await response.json();
