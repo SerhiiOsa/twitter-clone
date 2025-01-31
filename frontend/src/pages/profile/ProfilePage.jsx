@@ -4,7 +4,7 @@ import { FaArrowLeft } from 'react-icons/fa6';
 import { IoCalendarOutline } from 'react-icons/io5';
 import { FaLink } from 'react-icons/fa';
 import { MdEdit } from 'react-icons/md';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import Posts from '../../components/common/Posts';
 import ProfileHeaderSkeleton from '../../components/skeletons/ProfileHeaderSkeleton';
@@ -12,7 +12,7 @@ import EditProfileModal from './EditProfileModal';
 import { formatMemberSinceDate } from '../../utils/date';
 import useFollow from '../../hooks/useFollow';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-import toast from 'react-hot-toast';
+import useUpdateUserProfile from '../../hooks/useUpdateUserProfile';
 
 const ProfilePage = () => {
   const [coverImg, setCoverImg] = useState(null);
@@ -22,7 +22,6 @@ const ProfilePage = () => {
   const coverImgRef = useRef(null);
   const profileImgRef = useRef(null);
   const { follow, isPending } = useFollow();
-  const queryClient = useQueryClient();
   const {
     data: user,
     isLoading,
@@ -46,40 +45,7 @@ const ProfilePage = () => {
     },
   });
 
-  const { mutate: updateProfile, isPending: isUpdatingProfile } = useMutation({
-    mutationFn: async () => {
-      try {
-        const response = await fetch('/api/users/update', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ coverImg, profileImg }),
-        });
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Failed to update profile');
-        }
-        return data;
-      } catch (error) {
-        console.error(error);
-        throw error;
-      }
-    },
-    onSuccess: () => {
-      toast.success('Profile updated successfully');
-      Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['authUser'] }),
-        queryClient.invalidateQueries({ queryKey: ['userProfile'] }),
-      ]);
-      setCoverImg(null);
-      setProfileImg(null);
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
+  const { updateProfile, isUpdatingProfile } = useUpdateUserProfile();
 
   const memberSinceDate = formatMemberSinceDate(user?.createdAt);
 
@@ -103,11 +69,13 @@ const ProfilePage = () => {
     }
   };
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     if (isUpdatingProfile) {
       return;
     }
-    updateProfile();
+    await updateProfile({ coverImg, profileImg });
+    setCoverImg(null);
+    setProfileImg(null);
   };
 
   useEffect(() => {
