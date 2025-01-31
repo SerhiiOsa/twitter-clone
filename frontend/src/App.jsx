@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import HomePage from './pages/home/HomePage';
-import LoginPage from './pages/auth/login/loginPage';
-import SignUpPage from './pages/auth/signup/signUpPage';
+import LoginPage from './pages/auth/login/LoginPage';
+import SignUpPage from './pages/auth/signup/SignUpPage';
 import Sidebar from './components/common/SideBar';
 import RightPanel from './components/common/RightPanel';
 import NotificationPage from './pages/notification/NotificationPage';
